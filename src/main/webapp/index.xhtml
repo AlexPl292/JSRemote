@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+        PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xml:lang="en" lang="en">
+<h:head>
+    <title>Hello</title>
+</h:head>
+<h:body>
+    <h:form>
+        Email: <h:inputText value="#{controller.backer.email}"></h:inputText> <br/>
+        Password: <h:inputText value="#{controller.backer.password}"></h:inputText> <br/>
+        Rest url: <h:inputText value="#{controller.backer.url}"></h:inputText> <br/>
+
+        <!--
+            Комментарии на русском языке для ясности
+            TODO перевести комментариии на английский
+        -->
+        <!-- Первый ajax запрос на проверку соединения и получение списка тарифов
+        Полученные тарифы вставляются в список ниже -->
+        <h:commandButton value="Load tariffs" action="#{controller.setUp}">
+            <f:ajax execute="@all" render="tariffs" />
+        </h:commandButton>
+
+        <br/>
+
+        <!-- Создание и скачивание pdf -->
+        <h:selectOneMenu id="tariffs">
+            <f:selectItems value="#{controller.backer.tariffNames}"/>
+        </h:selectOneMenu>
+        <h:commandButton value="Load pdf" action="#{controller.createAndLoadPdf}"></h:commandButton>
+    </h:form>
+</h:body>
+</html>
