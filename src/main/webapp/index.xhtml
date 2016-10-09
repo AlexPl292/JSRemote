@@ -46,7 +46,7 @@
 
                                 <!-- Создание и скачивание pdf -->
                                 <div class="form-group">
-                                    <h:selectOneMenu styleClass="form-control" id="tariffs">
+                                    <h:selectOneMenu styleClass="form-control" id="tariffs" value="#{controller.backer.choosedTariff}">
                                         <f:selectItems value="#{controller.backer.tariffNames}"/>
                                     </h:selectOneMenu>
                                 </div>
