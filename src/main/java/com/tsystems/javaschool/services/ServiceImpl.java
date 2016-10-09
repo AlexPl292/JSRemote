@@ -14,10 +14,8 @@ import com.tsystems.javaschool.entities.Backer;
 import javax.ejb.Stateless;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by alex on 08.10.16.
@@ -52,7 +50,7 @@ public class ServiceImpl implements Service {
         Map<JsonNode, List<JsonNode>> nodes = prepareOutput(output);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-        Document document = new Document(PageSize.A4, 36f, 72f, 108f, 180f);
+        Document document = new Document(PageSize.A4, 36f, 72f, 40f, 30f);
         Font fontBig = new Font(Font.getFamily("Arial"), 30.0f, Font.BOLD);
         Font fontName = new Font(Font.getFamily("Arial"), 24.0f, Font.BOLD);
         Font fontMedium = new Font(Font.getFamily("Arial"), 12.0f, Font.NORMAL);
@@ -87,6 +85,22 @@ public class ServiceImpl implements Service {
                     document.add(new Paragraph(SMALL_LEADING+contract.get("number").asText()+
                         " - " + blocked));
                     document.add(new Paragraph(SMALL_LEADING+"Balance: "+String.format( "%.2f", contract.get("balance").asDouble())+" \u20BD"));
+
+                    Iterator<JsonNode> optIterator = contract.get("usedOptions").elements();
+                    com.itextpdf.text.List usedOptions = new com.itextpdf.text.List(10);
+                    usedOptions.setListSymbol("\u2022");
+                    if (optIterator.hasNext()) {
+                        document.add(new Paragraph(SMALL_LEADING+"Used options:"));
+                    } else {
+                        document.add(new Paragraph(SMALL_LEADING+"Options aren't used"));
+                    }
+                    while (optIterator.hasNext()) {
+                        JsonNode option = optIterator.next();
+                        usedOptions.add(new ListItem(option.get("name").asText(), fontMedium));
+                    }
+                    usedOptions.setIndentationLeft(60);
+                    document.add(usedOptions);
+
                     document.add(new Paragraph(SMALL_LEADING+Chunk.NEWLINE));
                 }
                 document.add(new Chunk(ls));
@@ -121,9 +135,9 @@ public class ServiceImpl implements Service {
         return response.getEntity(String.class);
     }
 
-    private Map<JsonNode, List<JsonNode>> prepareOutput(String output) {
+    private Map<JsonNode, java.util.List<JsonNode>> prepareOutput(String output) {
         ObjectMapper mapper = new ObjectMapper();
-        Map<JsonNode, List<JsonNode>> res = new HashMap<>();
+        Map<JsonNode, java.util.List<JsonNode>> res = new HashMap<>();
         try {
             JsonNode rootNode = mapper.readTree(output);
             for (JsonNode node : rootNode) {
