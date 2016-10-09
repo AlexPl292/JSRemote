@@ -7,4 +7,5 @@ import com.tsystems.javaschool.entities.Backer;
  */
 public interface Service {
     Boolean setUp(Backer backer);
+    String generate(Backer backer);
 }

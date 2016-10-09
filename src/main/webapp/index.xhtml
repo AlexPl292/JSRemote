@@ -6,30 +6,57 @@
       xmlns:f="http://xmlns.jcp.org/jsf/core" xml:lang="en" lang="en">
 <h:head>
     <title>Hello</title>
+    <link rel="stylesheet" type="text/css"
+          href="#{request.contextPath}/resources/bootstrap/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css"
+          href="#{request.contextPath}/resources/css/style.v0.1.css"/>
 </h:head>
 <h:body>
-    <h:form>
-        Email: <h:inputText value="#{controller.backer.email}"></h:inputText> <br/>
-        Password: <h:inputText value="#{controller.backer.password}"></h:inputText> <br/>
-        Rest url: <h:inputText value="#{controller.backer.url}"></h:inputText> <br/>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="login-panel panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Load</h3>
+                    </div>
+                    <div class="panel-body">
+                        <h:form>
+                            <fieldset>
+                                <div class="form-group">
+                                    Email: <h:inputText styleClass="form-control" value="#{controller.backer.email}"/>
+                                </div>
+                                <div class="form-group">
+                                    Password: <h:inputSecret styleClass="form-control" value="#{controller.backer.password}"/>
+                                </div>
+                                <div class="form-group">
+                                    Rest url: <h:inputText styleClass="form-control" value="#{controller.backer.url}"/>
+                                </div>
 
-        <!--
-            Комментарии на русском языке для ясности
-            TODO перевести комментариии на английский
-        -->
-        <!-- Первый ajax запрос на проверку соединения и получение списка тарифов
-        Полученные тарифы вставляются в список ниже -->
-        <h:commandButton value="Load tariffs" action="#{controller.setUp}">
-            <f:ajax execute="@all" render="tariffs" />
-        </h:commandButton>
+                                <!--
+                                    Комментарии на русском языке для ясности
+                                    TODO перевести комментариии на английский
+                                -->
+                                <!-- Первый ajax запрос на проверку соединения и получение списка тарифов
+                                Полученные тарифы вставляются в список ниже -->
+                                <h:commandButton styleClass="btn btn-lg btn-success btn-block" value="Load tariffs" action="#{controller.setUp}">
+                                    <f:ajax execute="@all" render="tariffs"/>
+                                </h:commandButton>
 
-        <br/>
+                                <br/>
 
-        <!-- Создание и скачивание pdf -->
-        <h:selectOneMenu id="tariffs">
-            <f:selectItems value="#{controller.backer.tariffNames}"/>
-        </h:selectOneMenu>
-        <h:commandButton value="Load pdf" action="#{controller.createAndLoadPdf}"></h:commandButton>
-    </h:form>
+                                <!-- Создание и скачивание pdf -->
+                                <div class="form-group">
+                                    <h:selectOneMenu styleClass="form-control" id="tariffs">
+                                        <f:selectItems value="#{controller.backer.tariffNames}"/>
+                                    </h:selectOneMenu>
+                                </div>
+                                <h:commandButton styleClass="btn btn-lg btn-success btn-block" value="Load pdf" action="#{controller.createAndLoadPdf}"/>
+                            </fieldset>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </h:body>
 </html>

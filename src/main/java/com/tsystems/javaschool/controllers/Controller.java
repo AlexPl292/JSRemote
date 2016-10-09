@@ -18,7 +18,7 @@ public class Controller {
     Комментарии на русском языке для ясности
     TODO перевести комментариии на английский
      */
-    @EJB(beanName = "mockService")  // "realService" for real rest requests
+    @EJB
     private Service service;
 
     private Backer backer = new Backer();

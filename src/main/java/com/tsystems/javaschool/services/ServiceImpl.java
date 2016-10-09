@@ -22,25 +22,7 @@ public class ServiceImpl implements Service {
     TODO перевести комментариии на английский
      */
     public Boolean setUp(Backer backer) {
-        Client client = Client.create();
-
-        // Аутентификация с помощью Basic auth
-        client.addFilter(new HTTPBasicAuthFilter(backer.getEmail(), backer.getPassword()));
-
-        // Запрашиваем список тарифов по адресу "restUrl + /tariffs"
-        WebResource webResource = client
-                .resource(backer.getUrl()+"/tariffs");
-        ClientResponse response = webResource.accept("application/json")
-                .get(ClientResponse.class);
-
-        // Проверка статуса
-        if (response.getStatus() != 200) {
-            throw new RuntimeException("Failed : HTTP error code : "
-                    + response.getStatus());
-        }
-
-        // Получение данных
-        String output = response.getEntity(String.class);
+        String output = request(backer, "/tariffs");
 
         // Записываем список тарифов в backer
         ObjectMapper mapper = new ObjectMapper();
@@ -55,5 +37,31 @@ public class ServiceImpl implements Service {
         }
 
         return true;
+    }
+
+    public String generate(Backer backer) {
+        String output = request(backer, "/contracts?tariff="+backer);
+    }
+
+    private String request(Backer backer, String resource) {
+        Client client = Client.create();
+
+        // Аутентификация с помощью Basic auth
+        client.addFilter(new HTTPBasicAuthFilter(backer.getEmail(), backer.getPassword()));
+
+        // Запрашиваем список тарифов по адресу "restUrl + /tariffs"
+        WebResource webResource = client
+                .resource(backer.getUrl()+resource);
+        ClientResponse response = webResource.accept("application/json")
+                .get(ClientResponse.class);
+
+        // Проверка статуса
+        if (response.getStatus() != 200) {
+            throw new RuntimeException("Failed : HTTP error code : "
+                    + response.getStatus());
+        }
+
+        // Получение данных
+        return response.getEntity(String.class);
     }
 }
