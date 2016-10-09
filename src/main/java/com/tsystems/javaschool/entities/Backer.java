@@ -11,7 +11,7 @@ public class Backer {
     private String password;
     private String url;
     private List<String> tariffNames = new ArrayList<String>();
-    private String choosedTariff;
+    private String chosenTariff;
 
     public void addName(String name) {
         tariffNames.add(name);
@@ -49,11 +49,11 @@ public class Backer {
         this.tariffNames = tariffNames;
     }
 
-    public String getChoosedTariff() {
-        return choosedTariff;
+    public String getChosenTariff() {
+        return chosenTariff;
     }
 
-    public void setChoosedTariff(String choosedTariff) {
-        this.choosedTariff = choosedTariff;
+    public void setChosenTariff(String chosenTariff) {
+        this.chosenTariff = chosenTariff;
     }
 }
