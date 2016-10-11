@@ -34,16 +34,22 @@ public class Controller {
     }
 
     public void createAndLoadPdf() {
+        if (backer.getChosenTariff() == null || backer.getChosenTariff().equals(""))
+            return;
+
         byte[] pdfData = service.generate(backer);
+        if (pdfData == null)
+            return;
+
         FacesContext facesContext = FacesContext.getCurrentInstance();
         ExternalContext externalContext = facesContext.getExternalContext();
         HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
 
 
         // Initialize response.
-        response.reset(); // Some JSF component library or some Filter might have set some headers in the buffer beforehand. We want to get rid of them, else it may collide.
-        response.setContentType("application/pdf"); // Check http://www.iana.org/assignments/media-types for all types. Use if necessary ServletContext#getMimeType() for auto-detection based on filename.
-        response.setHeader("Content-disposition", "attachment; filename=\"report.pdf\""); // The Save As popup magic is done here. You can give it any filename you want, this only won't work in MSIE, it will use current request URL as filename instead.
+        response.reset();
+        response.setContentType("application/pdf");
+        response.setHeader("Content-disposition", "attachment; filename=\"report.pdf\"");
 
         // Write file to response.
         try (OutputStream output = response.getOutputStream()){

@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Created by alex on 08.10.16.
  */
-@Stateless(name = "realService")
+@Stateless
 public class ServiceImpl implements Service {
 
     /*
@@ -32,12 +32,13 @@ public class ServiceImpl implements Service {
 
         // Записываем список тарифов в backer
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode rootNode = null;
+        JsonNode rootNode;
         try {
             rootNode = mapper.readTree(output);
         } catch (IOException e) {
-            e.printStackTrace();
+            return false;
         }
+        backer.setTariffNames(new ArrayList<>());
         for (JsonNode node : rootNode) {
             backer.addName(node.get("name").asText());
         }
@@ -47,7 +48,13 @@ public class ServiceImpl implements Service {
 
     public byte[] generate(Backer backer) {
         String output = request(backer, "/contracts?tariff="+backer.getChosenTariff());
+        if (output == null)
+            return null;
+
         Map<JsonNode, List<JsonNode>> nodes = prepareOutput(output);
+        if (nodes == null)
+            return null;
+
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         Document document = new Document(PageSize.A4, 36f, 72f, 40f, 30f);
@@ -63,6 +70,13 @@ public class ServiceImpl implements Service {
             document.add(new Paragraph("Tariff: " + backer.getChosenTariff(), fontMedium));
             document.add(new Chunk(ls));
             document.add(new Paragraph(Chunk.NEWLINE));
+
+            if (nodes.isEmpty()) {
+                document.add(new Paragraph("No contracts with chosen tariff"));
+                document.close();
+                return out.toByteArray();
+            }
+
             for (Map.Entry<JsonNode, List<JsonNode>> node : nodes.entrySet()) {
                 document.add(new Paragraph(node.getKey().get("surname").asText() +
                         " " +node.getKey().get("name").asText() +
@@ -127,8 +141,7 @@ public class ServiceImpl implements Service {
 
         // Проверка статуса
         if (response.getStatus() != 200) {
-            throw new RuntimeException("Failed : HTTP error code : "
-                    + response.getStatus());
+            return null;
         }
 
         // Получение данных
@@ -150,7 +163,7 @@ public class ServiceImpl implements Service {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            return null;
         }
         return res;
     }

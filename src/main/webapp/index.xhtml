@@ -23,13 +23,13 @@
                         <h:form>
                             <fieldset>
                                 <div class="form-group">
-                                    Email: <h:inputText styleClass="form-control" value="#{controller.backer.email}"/>
+                                    Email: <h:inputText styleClass="form-control" value="#{controller.backer.email}" required="true"/>
                                 </div>
                                 <div class="form-group">
-                                    Password: <h:inputSecret styleClass="form-control" value="#{controller.backer.password}"/>
+                                    Password: <h:inputSecret styleClass="form-control" value="#{controller.backer.password}" required="true"/>
                                 </div>
                                 <div class="form-group">
-                                    Rest url: <h:inputText styleClass="form-control" value="#{controller.backer.url}"/>
+                                    Rest url: <h:inputText styleClass="form-control" value="#{controller.backer.url}" required="true"/>
                                 </div>
 
                                 <!--
