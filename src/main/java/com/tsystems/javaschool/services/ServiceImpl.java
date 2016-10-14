@@ -3,6 +3,8 @@ package com.tsystems.javaschool.services;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.sun.jersey.api.client.Client;
@@ -66,6 +68,7 @@ public class ServiceImpl implements Service {
         Font fontBig = new Font(Font.getFamily("Arial"), 30.0f, Font.BOLD);
         Font fontName = new Font(Font.getFamily("Arial"), 24.0f, Font.BOLD);
         Font fontMedium = new Font(Font.getFamily("Arial"), 12.0f, Font.NORMAL);
+        Font fontMediumBold = new Font(Font.getFamily("Arial"), 12.0f, Font.BOLD);
         LineSeparator ls = new LineSeparator();
         try {
             PdfWriter.getInstance(document, out);
@@ -84,15 +87,81 @@ public class ServiceImpl implements Service {
 
             for (Map.Entry<JsonNode, List<JsonNode>> node : nodes.entrySet()) {
                 document.add(new Paragraph(node.getKey().get("surname").asText() +
-                        " " +node.getKey().get("name").asText() +
-                        " ("+ node.getValue().size()+" contract(s))", fontName));
-                document.add(new Paragraph("Id: "+node.getKey().get("id").asText()));
-                document.add(new Paragraph("Email: "+node.getKey().get("email").asText()));
-                document.add(new Paragraph("Address: "+node.getKey().get("address").asText()));
+                        " " +node.getKey().get("name").asText(), fontName));
                 document.add(new Paragraph(Chunk.NEWLINE));
-                document.add(new Paragraph("Contracts: "));
+                PdfPTable head = new PdfPTable(4);
+                head.setWidthPercentage(100);
+                head.setSpacingBefore(5);
+                head.setSpacingAfter(5);
+                float[] columnWidths = new float[]{5f, 20f, 15f, 10f};
+                head.setWidths(columnWidths);
+
+                PdfPCell cellId = new PdfPCell(new Paragraph("Id", fontMediumBold));
+                cellId.setPadding(5);
+                head.addCell(cellId);
+
+                PdfPCell cellEmail = new PdfPCell(new Paragraph("Email", fontMediumBold));
+                cellEmail.setPadding(5);
+                head.addCell(cellEmail);
+
+                PdfPCell cellAddress = new PdfPCell(new Paragraph("Address", fontMediumBold));
+                cellAddress.setPadding(5);
+                head.addCell(cellAddress);
+
+                PdfPCell cellContsCount = new PdfPCell(new Paragraph("Contracts count", fontMediumBold));
+                cellContsCount.setPadding(5);
+                head.addCell(cellContsCount);
+
+                PdfPCell cellIdVal = new PdfPCell(new Paragraph(node.getKey().get("id").asText()));
+                cellIdVal.setPadding(5);
+                head.addCell(cellIdVal);
+
+                PdfPCell cellEmailVal = new PdfPCell(new Paragraph(node.getKey().get("email").asText()));
+                cellEmailVal.setPadding(5);
+                head.addCell(cellEmailVal);
+
+                PdfPCell cellAddressVal = new PdfPCell(new Paragraph(node.getKey().get("address").asText()));
+                cellAddressVal.setPadding(5);
+                head.addCell(cellAddressVal);
+
+                PdfPCell cellContsVal = new PdfPCell(new Paragraph(node.getValue().size()+""));
+                cellContsVal.setPadding(5);
+                head.addCell(cellContsVal);
+
+                document.add(head);
+
+/*                document.add(new Paragraph("Id: "+node.getKey().get("id").asText()));
+                document.add(new Paragraph("Email: "+node.getKey().get("email").asText()));
+                document.add(new Paragraph("Address: "+node.getKey().get("address").asText()));*/
+                document.add(new Paragraph(Chunk.NEWLINE));
+                document.add(new Paragraph("Contracts: ", fontMediumBold));
+                document.add(new Paragraph(Chunk.NEWLINE));
+
+                PdfPTable table = new PdfPTable(4);
+                table.setWidthPercentage(100);
+                table.setSpacingBefore(5);
+                table.setSpacingAfter(5);
+                PdfPCell cellNumber = new PdfPCell(new Paragraph("Number", fontMediumBold));
+                cellNumber.setPadding(5);
+                table.addCell(cellNumber);
+
+                PdfPCell cellBlock = new PdfPCell(new Paragraph("Blocked", fontMediumBold));
+                cellBlock.setPadding(5);
+                table.addCell(cellBlock);
+
+                PdfPCell cellBalance = new PdfPCell(new Paragraph("Balance", fontMediumBold));
+                cellBalance.setPadding(5);
+                table.addCell(cellBalance);
+
+                PdfPCell cellOptions = new PdfPCell(new Paragraph("Options", fontMediumBold));
+                cellOptions.setPadding(5);
+                table.addCell(cellOptions);
+
                 for (JsonNode contract : node.getValue()) {
-                    String SMALL_LEADING = "    ";
+                    PdfPCell cellNumberVal = new PdfPCell(new Paragraph(contract.get("number").asText()));
+                    cellNumberVal.setPadding(5);
+                    table.addCell(cellNumberVal);
+
                     String blocked = "";
                     if (contract.get("isBlocked").asInt() == 0)
                         blocked = "non blocked";
@@ -101,29 +170,34 @@ public class ServiceImpl implements Service {
                     else if (contract.get("isBlocked").asInt() == 2)
                         blocked = "blocked by eCare";
 
-                    document.add(new Paragraph(SMALL_LEADING+contract.get("number").asText()+
-                        " - " + blocked));
-                    document.add(new Paragraph(SMALL_LEADING+"Balance: "+String.format( "%.2f", contract.get("balance").asDouble())+" \u20BD"));
+                    PdfPCell cellBlockVal = new PdfPCell(new Paragraph(blocked));
+                    cellBlockVal.setPadding(5);
+                    table.addCell(cellBlockVal);
+
+                    PdfPCell cellBalanceVal = new PdfPCell(new Paragraph(String.format( "%.2f", contract.get("balance").asDouble()) + " \u20BD"));
+                    cellBalanceVal.setPadding(5);
+                    table.addCell(cellBalanceVal);
 
                     Iterator<JsonNode> optIterator = contract.get("usedOptions").elements();
                     com.itextpdf.text.List usedOptions = new com.itextpdf.text.List(10);
                     usedOptions.setListSymbol("\u2022");
-                    if (optIterator.hasNext()) {
-                        document.add(new Paragraph(SMALL_LEADING+"Used options:"));
-                    } else {
-                        document.add(new Paragraph(SMALL_LEADING+"Options aren't used"));
+                    if (!optIterator.hasNext()) {
+                        document.add(new Paragraph("Options aren't used"));
                     }
                     while (optIterator.hasNext()) {
                         JsonNode option = optIterator.next();
                         usedOptions.add(new ListItem(option.get("name").asText(), fontMedium));
                     }
-                    usedOptions.setIndentationLeft(60);
-                    document.add(usedOptions);
 
-                    document.add(new Paragraph(SMALL_LEADING+Chunk.NEWLINE));
+                    PdfPCell optionCell = new PdfPCell();
+                    optionCell.addElement(usedOptions);
+                    optionCell.setPadding(5);
+                    table.addCell(optionCell);
                 }
-                document.add(new Chunk(ls));
+                document.add(table);
                 document.add(new Paragraph(Chunk.NEWLINE));
+                document.add(new Chunk(ls));
+                document.newPage();
             }
             document.close();
         } catch (DocumentException e) {
