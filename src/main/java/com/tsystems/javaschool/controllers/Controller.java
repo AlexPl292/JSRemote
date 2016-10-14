@@ -1,5 +1,6 @@
 package com.tsystems.javaschool.controllers;
 
+import com.tsystems.javaschool.Utils;
 import com.tsystems.javaschool.entities.Backer;
 import com.tsystems.javaschool.services.Service;
 
@@ -29,8 +30,12 @@ public class Controller {
     private Backer backer = new Backer();
 
     // Проверка соединения, запрос тарифов
-    public void setUp() {
-        service.setUp(backer);
+    public void login() {
+        Boolean res = service.logIn(backer);
+        if (res)
+            Utils.addMessage("Success login");
+        else
+            Utils.addMessage("Fail login");
     }
 
     public void createAndLoadPdf() {

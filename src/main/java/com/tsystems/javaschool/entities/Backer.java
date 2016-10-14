@@ -9,7 +9,6 @@ import java.util.List;
 public class Backer {
     private String email;
     private String password;
-    private String url;
     private List<String> tariffNames = new ArrayList<String>();
     private String chosenTariff;
 
@@ -31,14 +30,6 @@ public class Backer {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
     }
 
     public List<String> getTariffNames() {

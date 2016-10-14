@@ -3,7 +3,7 @@
         PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core" xml:lang="en" lang="en">
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui" xml:lang="en" lang="en">
 <h:head>
     <title>Hello</title>
     <link rel="stylesheet" type="text/css"
@@ -20,30 +20,29 @@
                         <h3 class="panel-title">Tariff report</h3>
                     </div>
                     <div class="panel-body">
-                        <h:form>
+                        <h:form id="myForm">
                             <fieldset>
+                                <p:growl id="growl" life="2000" autoUpdate="true"/>
                                 <div class="form-group">
                                     Email: <h:inputText styleClass="form-control" value="#{controller.backer.email}" required="true"/>
                                 </div>
                                 <div class="form-group">
-                                    Password: <h:inputSecret styleClass="form-control" value="#{controller.backer.password}" required="true"/>
+                                    Password: <h:inputSecret id="secret" styleClass="form-control" value="#{controller.backer.password}" required="true"/>
                                 </div>
-                                <div class="form-group">
-                                    Rest url: <h:inputText styleClass="form-control" value="#{controller.backer.url}" required="true"/>
-                                </div>
-
                                 <!--
                                     Комментарии на русском языке для ясности
                                     TODO перевести комментариии на английский
                                 -->
                                 <!-- Первый ajax запрос на проверку соединения и получение списка тарифов
                                 Полученные тарифы вставляются в список ниже -->
-                                <h:commandButton styleClass="btn btn-lg btn-success btn-block" value="Load tariffs" action="#{controller.setUp}">
-                                    <f:ajax execute="@all" render="tariffs"/>
-                                </h:commandButton>
+                                <p:commandButton id="loadTariffs" styleClass="btn btn-lg btn-success btn-block" value="Load tariffs" action="#{controller.login}" update="tariffForm:tariffs"/>
 
                                 <br/>
+                            </fieldset>
+                        </h:form>
 
+                        <h:form id="tariffForm">
+                            <fieldset>
                                 <!-- Создание и скачивание pdf -->
                                 <div class="form-group">
                                     Tariffs:
@@ -51,7 +50,7 @@
                                         <f:selectItems value="#{controller.backer.tariffNames}"/>
                                     </h:selectOneMenu>
                                 </div>
-                                <h:commandButton styleClass="btn btn-lg btn-success btn-block" value="Load pdf" action="#{controller.createAndLoadPdf}"/>
+                                <p:commandButton styleClass="btn btn-lg btn-success btn-block" value="Load pdf" action="#{controller.createAndLoadPdf}" ajax="false"/>
                             </fieldset>
                         </h:form>
                     </div>

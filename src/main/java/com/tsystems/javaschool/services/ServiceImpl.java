@@ -12,6 +12,8 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.tsystems.javaschool.entities.Backer;
 
 import javax.ejb.Stateless;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -27,8 +29,11 @@ public class ServiceImpl implements Service {
     Комментарии на русском языке для ясности
     TODO перевести комментариии на английский
      */
-    public Boolean setUp(Backer backer) {
+    public Boolean logIn(Backer backer) {
         String output = request(backer, "/tariffs");
+
+        if (output == null)
+            return false;
 
         // Записываем список тарифов в backer
         ObjectMapper mapper = new ObjectMapper();
@@ -133,9 +138,17 @@ public class ServiceImpl implements Service {
         // Аутентификация с помощью Basic auth
         client.addFilter(new HTTPBasicAuthFilter(backer.getEmail(), backer.getPassword()));
 
+        String restUrl;
+        try {
+            ResourceBundle rb = ResourceBundle.getBundle("bundle");
+            restUrl = rb.getString("restUrl");
+        } catch (MissingResourceException e) {
+            restUrl = "http://localhost:8080/JavaSchool/rest";
+        }
+
         // Запрашиваем список тарифов по адресу "restUrl + /tariffs"
         WebResource webResource = client
-                .resource(backer.getUrl()+resource);
+                .resource(restUrl+resource);
         ClientResponse response = webResource.accept("application/json")
                 .get(ClientResponse.class);
 
