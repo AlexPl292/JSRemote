@@ -20,16 +20,12 @@ import java.io.OutputStream;
 @SessionScoped
 public class Controller {
 
-    /*
-    Комментарии на русском языке для ясности
-    TODO перевести комментариии на английский
-     */
     @EJB
     private Service service;
 
     private Backer backer = new Backer();
 
-    // Проверка соединения, запрос тарифов
+    // Check connection, load tariffs list
     public void login() {
         Boolean res = service.logIn(backer);
         if (res)
@@ -57,7 +53,7 @@ public class Controller {
         response.setHeader("Content-disposition", "attachment; filename=\"report.pdf\"");
 
         // Write file to response.
-        try (OutputStream output = response.getOutputStream()){
+        try (OutputStream output = response.getOutputStream()) {
             output.write(pdfData);
         } catch (IOException e) {
             e.printStackTrace();

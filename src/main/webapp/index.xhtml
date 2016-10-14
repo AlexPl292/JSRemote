@@ -24,18 +24,17 @@
                             <fieldset>
                                 <p:growl id="growl" life="2000" autoUpdate="true"/>
                                 <div class="form-group">
-                                    Email: <h:inputText styleClass="form-control" value="#{controller.backer.email}" required="true"/>
+                                    Email: <h:inputText styleClass="form-control" value="#{controller.backer.email}"
+                                                        required="true"/>
                                 </div>
                                 <div class="form-group">
-                                    Password: <h:inputSecret id="secret" styleClass="form-control" value="#{controller.backer.password}" required="true"/>
+                                    Password: <h:inputSecret id="secret" styleClass="form-control"
+                                                             value="#{controller.backer.password}" required="true"/>
                                 </div>
-                                <!--
-                                    Комментарии на русском языке для ясности
-                                    TODO перевести комментариии на английский
-                                -->
-                                <!-- Первый ajax запрос на проверку соединения и получение списка тарифов
-                                Полученные тарифы вставляются в список ниже -->
-                                <p:commandButton id="loadTariffs" styleClass="btn btn-lg btn-success btn-block" value="Load tariffs" action="#{controller.login}" update="tariffForm:tariffs"/>
+                                <!-- First request for login and tariffs getting -->
+                                <p:commandButton id="loadTariffs" styleClass="btn btn-lg btn-success btn-block"
+                                                 value="Load tariffs" action="#{controller.login}"
+                                                 update="tariffForm:tariffs"/>
 
                                 <br/>
                             </fieldset>
@@ -43,14 +42,16 @@
 
                         <h:form id="tariffForm">
                             <fieldset>
-                                <!-- Создание и скачивание pdf -->
+                                <!-- create and load pdf -->
                                 <div class="form-group">
                                     Tariffs:
-                                    <h:selectOneMenu styleClass="form-control" id="tariffs" value="#{controller.backer.chosenTariff}">
+                                    <h:selectOneMenu styleClass="form-control" id="tariffs"
+                                                     value="#{controller.backer.chosenTariff}">
                                         <f:selectItems value="#{controller.backer.tariffNames}"/>
                                     </h:selectOneMenu>
                                 </div>
-                                <p:commandButton styleClass="btn btn-lg btn-success btn-block" value="Load pdf" action="#{controller.createAndLoadPdf}" ajax="false"/>
+                                <p:commandButton styleClass="btn btn-lg btn-success btn-block" value="Load pdf"
+                                                 action="#{controller.createAndLoadPdf}" ajax="false"/>
                             </fieldset>
                         </h:form>
                     </div>

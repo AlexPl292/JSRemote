@@ -14,8 +14,6 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.tsystems.javaschool.entities.Backer;
 
 import javax.ejb.Stateless;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
@@ -27,17 +25,13 @@ import java.util.List;
 @Stateless
 public class ServiceImpl implements Service {
 
-    /*
-    Комментарии на русском языке для ясности
-    TODO перевести комментариии на английский
-     */
     public Boolean logIn(Backer backer) {
         String output = request(backer, "/tariffs");
 
         if (output == null)
             return false;
 
-        // Записываем список тарифов в backer
+        // Write list of tariffs to backer
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode;
         try {
@@ -54,7 +48,7 @@ public class ServiceImpl implements Service {
     }
 
     public byte[] generate(Backer backer) {
-        String output = request(backer, "/contracts?tariff="+backer.getChosenTariff());
+        String output = request(backer, "/contracts?tariff=" + backer.getChosenTariff());
         if (output == null)
             return null;
 
@@ -87,7 +81,7 @@ public class ServiceImpl implements Service {
 
             for (Map.Entry<JsonNode, List<JsonNode>> node : nodes.entrySet()) {
                 document.add(new Paragraph(node.getKey().get("surname").asText() +
-                        " " +node.getKey().get("name").asText(), fontName));
+                        " " + node.getKey().get("name").asText(), fontName));
                 document.add(new Paragraph(Chunk.NEWLINE));
                 PdfPTable head = new PdfPTable(4);
                 head.setWidthPercentage(100);
@@ -124,15 +118,12 @@ public class ServiceImpl implements Service {
                 cellAddressVal.setPadding(5);
                 head.addCell(cellAddressVal);
 
-                PdfPCell cellContsVal = new PdfPCell(new Paragraph(node.getValue().size()+""));
+                PdfPCell cellContsVal = new PdfPCell(new Paragraph(node.getValue().size() + ""));
                 cellContsVal.setPadding(5);
                 head.addCell(cellContsVal);
 
                 document.add(head);
 
-/*                document.add(new Paragraph("Id: "+node.getKey().get("id").asText()));
-                document.add(new Paragraph("Email: "+node.getKey().get("email").asText()));
-                document.add(new Paragraph("Address: "+node.getKey().get("address").asText()));*/
                 document.add(new Paragraph(Chunk.NEWLINE));
                 document.add(new Paragraph("Contracts: ", fontMediumBold));
                 document.add(new Paragraph(Chunk.NEWLINE));
@@ -174,7 +165,7 @@ public class ServiceImpl implements Service {
                     cellBlockVal.setPadding(5);
                     table.addCell(cellBlockVal);
 
-                    PdfPCell cellBalanceVal = new PdfPCell(new Paragraph(String.format( "%.2f", contract.get("balance").asDouble()) + " \u20BD"));
+                    PdfPCell cellBalanceVal = new PdfPCell(new Paragraph(String.format("%.2f", contract.get("balance").asDouble()) + " \u20BD"));
                     cellBalanceVal.setPadding(5);
                     table.addCell(cellBalanceVal);
 
@@ -209,7 +200,7 @@ public class ServiceImpl implements Service {
     private String request(Backer backer, String resource) {
         Client client = Client.create();
 
-        // Аутентификация с помощью Basic auth
+        // Authentication with basic auth
         client.addFilter(new HTTPBasicAuthFilter(backer.getEmail(), backer.getPassword()));
 
         String restUrl;
@@ -220,18 +211,18 @@ public class ServiceImpl implements Service {
             restUrl = "http://localhost:8080/JavaSchool/rest";
         }
 
-        // Запрашиваем список тарифов по адресу "restUrl + /tariffs"
+        // Request
         WebResource webResource = client
-                .resource(restUrl+resource);
+                .resource(restUrl + resource);
         ClientResponse response = webResource.accept("application/json")
                 .get(ClientResponse.class);
 
-        // Проверка статуса
+        // Status check
         if (response.getStatus() != 200) {
             return null;
         }
 
-        // Получение данных
+        // Get data
         return response.getEntity(String.class);
     }
 

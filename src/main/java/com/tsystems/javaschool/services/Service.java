@@ -7,5 +7,6 @@ import com.tsystems.javaschool.entities.Backer;
  */
 public interface Service {
     Boolean logIn(Backer backer);
+
     byte[] generate(Backer backer);
 }
