@@ -48,7 +48,7 @@ public class ServiceImpl implements Service {
     }
 
     public byte[] generate(Backer backer) {
-        String output = request(backer, "/contracts?tariff=" + backer.getChosenTariff());
+        String output = request(backer, "/contracts?tariff=" + backer.getChosenTariff().replace(" ", "+"));
         if (output == null)
             return null;
 
@@ -172,9 +172,6 @@ public class ServiceImpl implements Service {
                     Iterator<JsonNode> optIterator = contract.get("usedOptions").elements();
                     com.itextpdf.text.List usedOptions = new com.itextpdf.text.List(10);
                     usedOptions.setListSymbol("\u2022");
-                    if (!optIterator.hasNext()) {
-                        document.add(new Paragraph("Options aren't used"));
-                    }
                     while (optIterator.hasNext()) {
                         JsonNode option = optIterator.next();
                         usedOptions.add(new ListItem(option.get("name").asText(), fontMedium));
