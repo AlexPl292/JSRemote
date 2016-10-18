@@ -26,6 +26,7 @@ import java.util.List;
 public class ServiceImpl implements Service {
 
     public Boolean logIn(Backer backer) {
+        String me = request(backer, "/users/me");
         String output = request(backer, "/tariffs");
 
         if (output == null)
@@ -34,11 +35,21 @@ public class ServiceImpl implements Service {
         // Write list of tariffs to backer
         ObjectMapper mapper = new ObjectMapper();
         JsonNode rootNode;
+        JsonNode rootNodeMe;
         try {
             rootNode = mapper.readTree(output);
+            rootNodeMe = mapper.readTree(me);
         } catch (IOException e) {
             return false;
         }
+//        if (rootNode.get("roles"))
+        boolean access = false;
+        for (JsonNode role : rootNodeMe.get("roles")){
+            if (role.asText().equals("ROLE_ADMIN"))
+                access = true;
+        }
+        if (!access)
+            return false;
         backer.setTariffNames(new ArrayList<>());
         for (JsonNode node : rootNode) {
             backer.addName(node.get("name").asText());
