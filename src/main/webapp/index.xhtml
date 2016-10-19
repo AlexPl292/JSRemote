@@ -3,33 +3,61 @@
         PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core" xml:lang="en" lang="en">
+      xmlns:f="http://xmlns.jcp.org/jsf/core" xmlns:p="http://primefaces.org/ui" xml:lang="en" lang="en">
 <h:head>
     <title>Hello</title>
+    <link rel="stylesheet" type="text/css"
+          href="#{request.contextPath}/resources/bootstrap/css/bootstrap.min.css"/>
+    <link rel="stylesheet" type="text/css"
+          href="#{request.contextPath}/resources/css/style.v0.1.css"/>
 </h:head>
 <h:body>
-    <h:form>
-        Email: <h:inputText value="#{controller.backer.email}"></h:inputText> <br/>
-        Password: <h:inputText value="#{controller.backer.password}"></h:inputText> <br/>
-        Rest url: <h:inputText value="#{controller.backer.url}"></h:inputText> <br/>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="login-panel panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">Tariff report</h3>
+                    </div>
+                    <div class="panel-body">
+                        <h:form id="myForm">
+                            <fieldset>
+                                <p:growl id="growl" life="2000" autoUpdate="true"/>
+                                <div class="form-group">
+                                    Email: <h:inputText styleClass="form-control" value="#{controller.backer.email}"
+                                                        required="true"/>
+                                </div>
+                                <div class="form-group">
+                                    Password: <h:inputSecret id="secret" styleClass="form-control"
+                                                             value="#{controller.backer.password}" required="true"/>
+                                </div>
+                                <!-- First request for login and tariffs getting -->
+                                <p:commandButton id="loadTariffs" styleClass="btn btn-lg btn-success btn-block"
+                                                 value="Load tariffs" action="#{controller.login}"
+                                                 update="tariffForm:tariffs"/>
 
-        <!--
-            Комментарии на русском языке для ясности
-            TODO перевести комментариии на английский
-        -->
-        <!-- Первый ajax запрос на проверку соединения и получение списка тарифов
-        Полученные тарифы вставляются в список ниже -->
-        <h:commandButton value="Load tariffs" action="#{controller.setUp}">
-            <f:ajax execute="@all" render="tariffs" />
-        </h:commandButton>
+                                <br/>
+                            </fieldset>
+                        </h:form>
 
-        <br/>
-
-        <!-- Создание и скачивание pdf -->
-        <h:selectOneMenu id="tariffs">
-            <f:selectItems value="#{controller.backer.tariffNames}"/>
-        </h:selectOneMenu>
-        <h:commandButton value="Load pdf" action="#{controller.createAndLoadPdf}"></h:commandButton>
-    </h:form>
+                        <h:form id="tariffForm">
+                            <fieldset>
+                                <!-- create and load pdf -->
+                                <div class="form-group">
+                                    Tariffs:
+                                    <h:selectOneMenu styleClass="form-control" id="tariffs"
+                                                     value="#{controller.backer.chosenTariff}">
+                                        <f:selectItems value="#{controller.backer.tariffNames}"/>
+                                    </h:selectOneMenu>
+                                </div>
+                                <p:commandButton styleClass="btn btn-lg btn-success btn-block" value="Load pdf"
+                                                 action="#{controller.createAndLoadPdf}" ajax="false"/>
+                            </fieldset>
+                        </h:form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </h:body>
 </html>

@@ -9,8 +9,8 @@ import java.util.List;
 public class Backer {
     private String email;
     private String password;
-    private String url;
     private List<String> tariffNames = new ArrayList<String>();
+    private String chosenTariff;
 
     public void addName(String name) {
         tariffNames.add(name);
@@ -32,19 +32,19 @@ public class Backer {
         this.password = password;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
     public List<String> getTariffNames() {
         return tariffNames;
     }
 
     public void setTariffNames(List<String> tariffNames) {
         this.tariffNames = tariffNames;
+    }
+
+    public String getChosenTariff() {
+        return chosenTariff;
+    }
+
+    public void setChosenTariff(String chosenTariff) {
+        this.chosenTariff = chosenTariff;
     }
 }

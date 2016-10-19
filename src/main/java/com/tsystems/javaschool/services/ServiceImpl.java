@@ -2,6 +2,11 @@ package com.tsystems.javaschool.services;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itextpdf.text.*;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.LineSeparator;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -9,51 +14,243 @@ import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.tsystems.javaschool.entities.Backer;
 
 import javax.ejb.Stateless;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.*;
+import java.util.List;
 
 /**
  * Created by alex on 08.10.16.
  */
-@Stateless(name = "realService")
+@Stateless
 public class ServiceImpl implements Service {
 
-    /*
-    Комментарии на русском языке для ясности
-    TODO перевести комментариии на английский
-     */
-    public Boolean setUp(Backer backer) {
-        Client client = Client.create();
+    public Boolean logIn(Backer backer) {
+        String me = request(backer, "/users/me");
+        String output = request(backer, "/tariffs");
 
-        // Аутентификация с помощью Basic auth
-        client.addFilter(new HTTPBasicAuthFilter(backer.getEmail(), backer.getPassword()));
+        if (output == null)
+            return false;
 
-        // Запрашиваем список тарифов по адресу "restUrl + /tariffs"
-        WebResource webResource = client
-                .resource(backer.getUrl()+"/tariffs");
-        ClientResponse response = webResource.accept("application/json")
-                .get(ClientResponse.class);
-
-        // Проверка статуса
-        if (response.getStatus() != 200) {
-            throw new RuntimeException("Failed : HTTP error code : "
-                    + response.getStatus());
-        }
-
-        // Получение данных
-        String output = response.getEntity(String.class);
-
-        // Записываем список тарифов в backer
+        // Write list of tariffs to backer
         ObjectMapper mapper = new ObjectMapper();
-        JsonNode rootNode = null;
+        JsonNode rootNode;
+        JsonNode rootNodeMe;
         try {
             rootNode = mapper.readTree(output);
+            rootNodeMe = mapper.readTree(me);
         } catch (IOException e) {
-            e.printStackTrace();
+            return false;
         }
+//        if (rootNode.get("roles"))
+        boolean access = false;
+        for (JsonNode role : rootNodeMe.get("roles")){
+            if (role.asText().equals("ROLE_ADMIN"))
+                access = true;
+        }
+        if (!access)
+            return false;
+        backer.setTariffNames(new ArrayList<>());
         for (JsonNode node : rootNode) {
             backer.addName(node.get("name").asText());
         }
 
         return true;
+    }
+
+    public byte[] generate(Backer backer) {
+        String output = request(backer, "/contracts?tariff=" + backer.getChosenTariff().replace(" ", "+"));
+        if (output == null)
+            return null;
+
+        Map<JsonNode, List<JsonNode>> nodes = prepareOutput(output);
+        if (nodes == null)
+            return null;
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        Document document = new Document(PageSize.A4, 36f, 72f, 40f, 30f);
+        Font fontBig = new Font(Font.getFamily("Arial"), 30.0f, Font.BOLD);
+        Font fontName = new Font(Font.getFamily("Arial"), 24.0f, Font.BOLD);
+        Font fontMedium = new Font(Font.getFamily("Arial"), 12.0f, Font.NORMAL);
+        Font fontMediumBold = new Font(Font.getFamily("Arial"), 12.0f, Font.BOLD);
+        LineSeparator ls = new LineSeparator();
+        try {
+            PdfWriter.getInstance(document, out);
+            document.open();
+            document.add(new Paragraph("Tariff report", fontBig));
+            document.add(new Paragraph(Chunk.NEWLINE));
+            document.add(new Paragraph("Tariff: " + backer.getChosenTariff(), fontMedium));
+            document.add(new Chunk(ls));
+            document.add(new Paragraph(Chunk.NEWLINE));
+
+            if (nodes.isEmpty()) {
+                document.add(new Paragraph("No contracts with chosen tariff"));
+                document.close();
+                return out.toByteArray();
+            }
+
+            for (Map.Entry<JsonNode, List<JsonNode>> node : nodes.entrySet()) {
+                document.add(new Paragraph(node.getKey().get("surname").asText() +
+                        " " + node.getKey().get("name").asText(), fontName));
+                document.add(new Paragraph(Chunk.NEWLINE));
+                PdfPTable head = new PdfPTable(4);
+                head.setWidthPercentage(100);
+                head.setSpacingBefore(5);
+                head.setSpacingAfter(5);
+                float[] columnWidths = new float[]{5f, 20f, 15f, 10f};
+                head.setWidths(columnWidths);
+
+                PdfPCell cellId = new PdfPCell(new Paragraph("Id", fontMediumBold));
+                cellId.setPadding(5);
+                head.addCell(cellId);
+
+                PdfPCell cellEmail = new PdfPCell(new Paragraph("Email", fontMediumBold));
+                cellEmail.setPadding(5);
+                head.addCell(cellEmail);
+
+                PdfPCell cellAddress = new PdfPCell(new Paragraph("Address", fontMediumBold));
+                cellAddress.setPadding(5);
+                head.addCell(cellAddress);
+
+                PdfPCell cellContsCount = new PdfPCell(new Paragraph("Contracts count", fontMediumBold));
+                cellContsCount.setPadding(5);
+                head.addCell(cellContsCount);
+
+                PdfPCell cellIdVal = new PdfPCell(new Paragraph(node.getKey().get("id").asText()));
+                cellIdVal.setPadding(5);
+                head.addCell(cellIdVal);
+
+                PdfPCell cellEmailVal = new PdfPCell(new Paragraph(node.getKey().get("email").asText()));
+                cellEmailVal.setPadding(5);
+                head.addCell(cellEmailVal);
+
+                PdfPCell cellAddressVal = new PdfPCell(new Paragraph(node.getKey().get("address").asText()));
+                cellAddressVal.setPadding(5);
+                head.addCell(cellAddressVal);
+
+                PdfPCell cellContsVal = new PdfPCell(new Paragraph(node.getValue().size() + ""));
+                cellContsVal.setPadding(5);
+                head.addCell(cellContsVal);
+
+                document.add(head);
+
+                document.add(new Paragraph(Chunk.NEWLINE));
+                document.add(new Paragraph("Contracts: ", fontMediumBold));
+                document.add(new Paragraph(Chunk.NEWLINE));
+
+                PdfPTable table = new PdfPTable(4);
+                table.setWidthPercentage(100);
+                table.setSpacingBefore(5);
+                table.setSpacingAfter(5);
+                PdfPCell cellNumber = new PdfPCell(new Paragraph("Number", fontMediumBold));
+                cellNumber.setPadding(5);
+                table.addCell(cellNumber);
+
+                PdfPCell cellBlock = new PdfPCell(new Paragraph("Blocked", fontMediumBold));
+                cellBlock.setPadding(5);
+                table.addCell(cellBlock);
+
+                PdfPCell cellBalance = new PdfPCell(new Paragraph("Balance", fontMediumBold));
+                cellBalance.setPadding(5);
+                table.addCell(cellBalance);
+
+                PdfPCell cellOptions = new PdfPCell(new Paragraph("Options", fontMediumBold));
+                cellOptions.setPadding(5);
+                table.addCell(cellOptions);
+
+                for (JsonNode contract : node.getValue()) {
+                    PdfPCell cellNumberVal = new PdfPCell(new Paragraph(contract.get("number").asText()));
+                    cellNumberVal.setPadding(5);
+                    table.addCell(cellNumberVal);
+
+                    String blocked = "";
+                    if (contract.get("isBlocked").asInt() == 0)
+                        blocked = "non blocked";
+                    else if (contract.get("isBlocked").asInt() == 1)
+                        blocked = "blocked by customer";
+                    else if (contract.get("isBlocked").asInt() == 2)
+                        blocked = "blocked by eCare";
+
+                    PdfPCell cellBlockVal = new PdfPCell(new Paragraph(blocked));
+                    cellBlockVal.setPadding(5);
+                    table.addCell(cellBlockVal);
+
+                    PdfPCell cellBalanceVal = new PdfPCell(new Paragraph(String.format("%.2f", contract.get("balance").asDouble()) + " \u20BD"));
+                    cellBalanceVal.setPadding(5);
+                    table.addCell(cellBalanceVal);
+
+                    Iterator<JsonNode> optIterator = contract.get("usedOptions").elements();
+                    com.itextpdf.text.List usedOptions = new com.itextpdf.text.List(10);
+                    usedOptions.setListSymbol("\u2022");
+                    while (optIterator.hasNext()) {
+                        JsonNode option = optIterator.next();
+                        usedOptions.add(new ListItem(option.get("name").asText(), fontMedium));
+                    }
+
+                    PdfPCell optionCell = new PdfPCell();
+                    optionCell.addElement(usedOptions);
+                    optionCell.setPadding(5);
+                    table.addCell(optionCell);
+                }
+                document.add(table);
+                document.add(new Paragraph(Chunk.NEWLINE));
+                document.add(new Chunk(ls));
+                document.newPage();
+            }
+            document.close();
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+        return out.toByteArray();
+    }
+
+    private String request(Backer backer, String resource) {
+        Client client = Client.create();
+
+        // Authentication with basic auth
+        client.addFilter(new HTTPBasicAuthFilter(backer.getEmail(), backer.getPassword()));
+
+        String restUrl;
+        try {
+            ResourceBundle rb = ResourceBundle.getBundle("bundle");
+            restUrl = rb.getString("restUrl");
+        } catch (MissingResourceException e) {
+            restUrl = "http://localhost:8080/JavaSchool/rest";
+        }
+
+        // Request
+        WebResource webResource = client
+                .resource(restUrl + resource);
+        ClientResponse response = webResource.accept("application/json")
+                .get(ClientResponse.class);
+
+        // Status check
+        if (response.getStatus() != 200) {
+            return null;
+        }
+
+        // Get data
+        return response.getEntity(String.class);
+    }
+
+    private Map<JsonNode, java.util.List<JsonNode>> prepareOutput(String output) {
+        ObjectMapper mapper = new ObjectMapper();
+        Map<JsonNode, java.util.List<JsonNode>> res = new HashMap<>();
+        try {
+            JsonNode rootNode = mapper.readTree(output);
+            for (JsonNode node : rootNode) {
+                if (res.containsKey(node.get("customer")))
+                    res.get(node.get("customer")).add(node);
+                else {
+                    List<JsonNode> tmp = new ArrayList<>();
+                    tmp.add(node);
+                    res.put(node.get("customer"), tmp);
+                }
+            }
+        } catch (IOException e) {
+            return null;
+        }
+        return res;
     }
 }
